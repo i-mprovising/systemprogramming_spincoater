@@ -13,12 +13,6 @@
 #define VALUE_MAX 40
 #define DIRECTION_MAX 40
 
-void error_handling(char *message) {
-  fputs(message, stderr);
-  fputc('\n', stderr);
-  exit(1); //프로그램 종료
-}
-
 int GPIOExport(int pin) {
 #define BUFFER_MAX 3
     char buffer[BUFFER_MAX];

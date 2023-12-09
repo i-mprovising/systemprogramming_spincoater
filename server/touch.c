@@ -4,32 +4,25 @@
 
 #define IN 0
 #define OUT 1
+#define WAIT_MS 200
 
-void* touchToLcd(char **msg) {
-    int pid;
-    pid = fork();
-    if (pid == -1)  error_handling("fork() failed");
-    if (pid != 0) { //parent
-        // printf("child pid=%d\n", pid);
-        return NULL;  //parent thread 종료
-    }
-    if (*msg) {
-        writeLCD(msg);
+typedef struct touch_state {
+    int press; // 누르고 있는 동안 1, 놓으면 0
+    int down; // 눌려질 때(rising edge)만 1, 누르고 있는 동안은 0
+    int up; // 놓여질 때(falling edge)만 1
+} TOUCH_STATE;
 
-        for (int i = 0; i < 2; i++) free(msg[i]);
-        free(msg);
-    }
-    exit(0); //child 종료
+static TOUCH_STATE touch;
 
+static void touch_probe(int pin, TOUCH_STATE *tch) {
+    int old_press = tch->press;
+
+    tch->press = (GPIORead(pin) != 0) ? 1 : 0;
+    tch->down = (old_press == 0 && tch->press == 1) ? 1 : 0; // rising edge (tch down)
+    tch->up = (old_press == 1 && tch->press == 0) ? 1 : 0; // falling edge (tch up)
 }
 
-void* readTouch(void) {
-
-    int prev_state = 1;
-    int count = 0;
-    pthread_t thread;
-    char **msg;
-
+void touchInit(void) {
     if (GPIOExport(PIN) == -1) {
         error_handling("GPIOExport error\n");
     }
@@ -37,50 +30,26 @@ void* readTouch(void) {
     if (GPIODirection(PIN, IN) == -1) {
         error_handling("GPIODirection error\n");
     }
+}
 
-    msg = (char**)malloc(sizeof(char **) * 2);
-    for (int i = 0; i < 2; i++) {
-        msg[i] = (char *)malloc(sizeof(char *) * 256);
-    }
-
-    msg[0] = "Waiting for press";
-    msg[1] = "touch sensor ...";
-    // printf("Waiting for press touch sensor ...\n");
-    pthread_create(&thread, NULL, touchToLcd, msg);
-    if (thread < 0)
-        error_handling("pthread create error\n");
-
-    do {
-        count = 0;
-        for (int i = 0; i < 13; i++) {
-            usleep(1000 * 100);
-            if (GPIORead(PIN) != 0) count++;
-            // printf("count = %d\n", count);
-        }
-        // if (count == 0) printf("Nothing Press!!\n");
-        if (count > 8) {
-            msg[0] = "Stop!!";
-            msg[1] = "More than 3 Sec ..";
-            // printf("Stop!! More than 3 Sec ..\n");
-            pthread_create(&thread, NULL, touchToLcd, msg);
-            if (thread < 0)
-                error_handling("pthread create error\n");
-        }
-        else {
-            msg[0] = "Start!!";
-            msg[1] = "Less than 3 Sec ...";
-            // printf("Start!! Less than 3 Sec ...\n");
-            pthread_create(&thread, NULL, touchToLcd, msg);
-            if (thread < 0)
-                error_handling("pthread create error\n");
-        }
-
-        // printf("Waiting for press touch sensor ...\n");
-
-    } while (1);
-
+void touchDeinit(void) {
     if (GPIOUnexport(PIN) == -1) {
         error_handling("GPIOUnexport error\n");
     }
-    exit(0);
+}
+
+int touchRead(void) {
+    int sec, count = 0;
+
+    touch.press = touch.down = touch.up = 0;
+    while (!touch.up) {
+        usleep(WAIT_MS * 1000); // 0.1 sec
+        touch_probe(PIN, &touch);
+        if (touch.down) count = 0;
+        else if (touch.press) count++;  
+    }
+    sec = count * WAIT_MS / 1000;
+    if (sec < 3) return 1;
+    writeLCD("Stop!!", "More than 3 Sec ...");
+    return 0;
 }
