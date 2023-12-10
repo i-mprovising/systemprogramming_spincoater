@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#define IN 0
+#define OUT 1
+
 typedef struct rasberry_pi { // buffer 구조체
     int camera;
     int servo;
@@ -17,7 +20,7 @@ typedef struct rasberry_pi { // buffer 구조체
 extern RASBERRY_PI raspi;
 
 // spin_coater.c
-void* match_sensor(int sock);
+void match_sensor(int sock);
 void start_spin(void);
 void connectSocket(int port);
 
@@ -30,8 +33,8 @@ int touchRead(void);
 int writestr(int fd, char *str);
 void cleanup(void);
 void error_handling(char *message);
-void* error_thread(void);
-void* stop_thread(void);
+void *error_thread(void *param);
+void *stop_thread(void *param);
 
 //lcd.c
 void lcdInit(void);
@@ -39,10 +42,10 @@ void clearLcd(void);
 void writeLCD(char *msg1, char *msg2);
 
 //gpio.c
+int GPIOExport(int pin);
+int GPIOUnexport(int pin);
+int GPIODirection(int pin, int dir);
 int GPIOWrite(int pin, int value);
 int GPIORead(int pin);
-int GPIODirection(int pin, int dir);
-int GPIOUnexport(int pin);
-int GPIOExport(int pin);
 
 #endif

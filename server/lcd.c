@@ -1,6 +1,6 @@
+#include "./server.h"
 #include <wiringPiI2C.h>
 #include <wiringPi.h>
-#include "./server.h"
 
 #define I2C_ADDR   0x27 // I2C device address
 
@@ -16,9 +16,6 @@ int fd;
 
 void lcdByte(int bits, int mode);
 void lcd_toggle_enable(int bits);
-
-if (wiringPiSetup () == -1) error_handling("WiringPi Error");
-fd = wiringPiI2CSetup(I2C_ADDR);
 
 // clear lcd
 void clearLcd(void) {
@@ -60,6 +57,8 @@ void lcd_toggle_enable(int bits) {
 }
 
 void lcdInit() {
+    if (wiringPiSetup() == -1) error_handling("WiringPi Error");
+    fd = wiringPiI2CSetup(I2C_ADDR);
     lcdByte(0x33, LCD_CMD); // 초기화
     lcdByte(0x32, LCD_CMD);
     lcdByte(0x06, LCD_CMD);

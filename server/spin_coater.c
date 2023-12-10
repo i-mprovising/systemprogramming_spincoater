@@ -5,7 +5,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-void* match_sensor(int sock) {
+void match_sensor(int sock) {
     int len;
     char msg[256];
     
@@ -21,20 +21,27 @@ void start_spin(void) {
     char msg[256];
     
     writestr(raspi.camera, "Start");
-    writeLCD("Find Center", "by Camera");
+    writeLCD("Find Center", "by Camera!");
     len = read(raspi.camera, msg, sizeof(msg)); //움직일 거리 카메라에서 받아오기
+    msg[len - 1] = '\0';
+    printf("** By Camera = %s **\n", msg);
     write(raspi.servo, msg, len); //움직일 거리 서보모터에게 전달
-    writeLCD("Move to Center", "by Servo Motor");
+    writeLCD("Move to Center", "by Servo Motor!");
     len = read(raspi.servo, msg, sizeof(msg)); //Lid 감지(초음파)
-    if (strcmp(msg, "LID")) {
-        writeLCD("Start Spin Coater", "by DC Motor");
+    msg[len - 1] = '\0';
+    if (!strcmp(msg, "LID")) {
+        printf("** By Servo = %s **\n", msg);
+        writeLCD("Start Spin", "by DC Motor!");
         write(raspi.camera, msg, len);
         writestr(raspi.dc, "Start");
     }
     len = read(raspi.dc, msg, sizeof(msg));
-    writeLCD("End Spin Coater", "Thank you~!");
+    msg[len - 1] = '\0';
+    printf("** By DCmotor = %s **\n", msg);
+    writeLCD("End Spin Coater", "Thank you!");
     writestr(raspi.camera, "End");
     writestr(raspi.servo, "End");
+    usleep(1000 * 3000);
 }
 
 void connectSocket(int port) {
@@ -65,9 +72,7 @@ void connectSocket(int port) {
         clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
         if (clnt_sock == -1) error_handling("accept() error");
         printf("clnt_sock = %d\n", clnt_sock);
-        pthread_create(&thread, NULL, match_sensor, clnt_sock);
-        if (thread < 0)
-            error_handling("pthread create error\n");
+        match_sensor(clnt_sock);
         pthread_join(thread, NULL);
     }
 }

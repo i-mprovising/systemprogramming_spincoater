@@ -19,13 +19,14 @@ int main(int argc, char *argv[]) {
         error_handling("pthread create error\n");
     writeLCD("Press To Start", "Spin Coater");
     if (!touchRead()) return (0); // 3초 이상 눌렀을 때
-    writeLCD("Start~!", "Spin Coater~~");
+    writeLCD("Start!", "Spin Coater");
+    usleep(1000 * 2000);
 
     pthread_create(&sthread, NULL, stop_thread, NULL);
     if (sthread < 0)
         error_handling("pthread create error\n");
 
-    printf("Spin Coater Start\n");
+    printf("===== Spin Coater Start =====\n");
     start_spin(); // spin coater start
     cleanup();
 

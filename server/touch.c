@@ -1,9 +1,6 @@
 #include "./server.h"
 
-#define PIN 12
-
-#define IN 0
-#define OUT 1
+#define PIN 18
 #define WAIT_MS 200
 
 typedef struct touch_state {
@@ -24,17 +21,17 @@ static void touch_probe(int pin, TOUCH_STATE *tch) {
 
 void touchInit(void) {
     if (GPIOExport(PIN) == -1) {
-        error_handling("GPIOExport error\n");
+        error_handling("GPIOExport error");
     }
-
     if (GPIODirection(PIN, IN) == -1) {
-        error_handling("GPIODirection error\n");
+        printf("GPIODirection error\n");
+        // error_handling("GPIODirection error");
     }
 }
 
 void touchDeinit(void) {
     if (GPIOUnexport(PIN) == -1) {
-        error_handling("GPIOUnexport error\n");
+        error_handling("GPIOUnexport error");
     }
 }
 
@@ -49,7 +46,7 @@ int touchRead(void) {
         else if (touch.press) count++;  
     }
     sec = count * WAIT_MS / 1000;
-    if (sec < 3) return 1;
+    if (sec < 2) return 1;
     writeLCD("Stop!!", "More than 3 Sec ...");
     return 0;
 }

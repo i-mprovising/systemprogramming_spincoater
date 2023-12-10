@@ -20,7 +20,7 @@ void error_handling(char *message) {
     exit(1); //프로그램 종료
 }
 
-void* error_thread(void) {
+void *error_thread(void *param) {
     int len;
     char msg[10];
 
@@ -40,7 +40,7 @@ void* error_thread(void) {
     }
 }
 
-void* stop_thread(void) {
+void *stop_thread(void *param) {
     while (touchRead()); // 길 누를 때까지
     writestr(raspi.camera, "Stop");
     writestr(raspi.servo, "Stop");
