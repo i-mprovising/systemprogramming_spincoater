@@ -9,18 +9,17 @@ int main(int argc, char *argv[]) {
         printf("Usage : %s <port>\n", argv[0]);
         error_handling("argc error");
     }
+
     connectSocket(atoi(argv[1])); // connect socket
     lcdInit(); // setup LCD
     touchInit(); // setup Touch Sensor
 
     printf("Camera = %d DCmotor = %d Servo = %d\n", raspi.camera, raspi.dc, raspi.servo);
-    pthread_create(&ethread, NULL, error_thread, NULL);
-    if (ethread < 0)
-        error_handling("pthread create error\n");
+    // pthread_create(&ethread, NULL, error_thread, NULL); // error
+    // if (ethread < 0)
+    //     error_handling("pthread create error\n");
     writeLCD("Press To Start", "Spin Coater");
     if (!touchRead()) return (0); // 3초 이상 눌렀을 때
-    writeLCD("Start!", "Spin Coater");
-    usleep(1000 * 2000);
 
     pthread_create(&sthread, NULL, stop_thread, NULL);
     if (sthread < 0)
@@ -28,7 +27,9 @@ int main(int argc, char *argv[]) {
 
     printf("===== Spin Coater Start =====\n");
     start_spin(); // spin coater start
+    // pthread_join(sthread, NULL);
     cleanup();
+    usleep(3000*1000);
 
     return (0);
 }

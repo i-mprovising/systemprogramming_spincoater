@@ -1,6 +1,6 @@
-#include "./server.h"
-#include <wiringPiI2C.h>
-#include <wiringPi.h>
+// #include "./server.h"
+// #include <wiringPiI2C.h>
+// #include <wiringPi.h>
 
 #define I2C_ADDR   0x27 // I2C device address
 

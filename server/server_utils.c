@@ -1,4 +1,5 @@
 #include "./server.h"
+#include <sys/socket.h>
 
 int writestr(int fd, char *str) {
     return write(fd, str, strlen(str));
@@ -7,6 +8,9 @@ int writestr(int fd, char *str) {
 void cleanup(void) {
     clearLcd();
     touchDeinit();
+    shutdown(raspi.camera, SHUT_RDWR);
+    shutdown(raspi.dc, SHUT_RDWR);
+    shutdown(raspi.servo, SHUT_RDWR);
     close(raspi.camera);
     close(raspi.dc);
     close(raspi.servo);
@@ -41,9 +45,10 @@ void *error_thread(void *param) {
 }
 
 void *stop_thread(void *param) {
-    while (touchRead()); // 길 누를 때까지
+    while (touchRead()); // 길게 누를 때까지
     writestr(raspi.camera, "Stop");
     writestr(raspi.servo, "Stop");
     writestr(raspi.dc, "Stop");
+    usleep(3000 * 1000);
     error_handling("Stop By Press Button");
 }
