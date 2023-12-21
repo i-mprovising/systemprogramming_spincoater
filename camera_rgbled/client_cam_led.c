@@ -33,7 +33,7 @@ void camera()
 {
     FILE *fp;
     system("raspistill -t 1000 -o captures/cam.jpg");
-    sleep(3);
+    sleep(2);
 
     /* Python 스크립트 실행 */
     fp = popen("python3 get_distance.py", "r");
