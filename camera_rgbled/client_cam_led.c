@@ -36,7 +36,7 @@ void camera()
     sleep(3);
 
     /* Python 스크립트 실행 */
-    fp = popen("python3 getdist.py", "r");
+    fp = popen("python3 get_distance.py", "r");
     if (fp == NULL)
     {
         error_handling("Failed to run command");
